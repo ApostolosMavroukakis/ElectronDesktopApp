@@ -6,22 +6,43 @@ const request = require('request');
 const progress = require('request-progress');
 
 
+const TIMEOUT = 5000; //5sec
+const { DownloaderHelper } = require('node-downloader-helper');
+let url = "https://test.rdc-web.gr/hellloooo.zip";
+let dirPath ="./downloads";
+// const dl = new DownloaderHelper(url, dirPath);
+// dl.on('start', () => startTime = new Date())
+//    .on('error', (error) => { 
+//               const endTime = new Date();
+//               // probably you can check the error.status value
+//               if (endTime  - startTime >= TIMEOUT){
+//                dl.resume(); 
+//                console.log('Download Retry');
+//               }
+//     })
+//     .on('end', () => console.log('Download Completed'))
+//     .on('progress',state  => 
+//         console.log(state)
+//         )
 
-// progress(request('https://speed.hetzner.de/10GB.bin'), {
+    
+//     .start();
+
+progress(request(url), {
  
-// })
-//   .on('progress', function (state) {
+})
+  .on('progress', function (state) {
 
-//     console.log('progress', state);
-// })
-// .on('error', function (err) {
-//     console.log('Something went wrong');
-// })
-//   .on('close', function () {
-//     console.log('File written!');
-//   })
+    console.log('progress', state);
+})
+.on('error', function (err) {
+    console.log('Something went wrong');
+})
+  .on('close', function () {
+    console.log('File written!');
+  })
 
-//   .pipe(fs.createWriteStream('./downloads/1gb.zip'));
+  .pipe(fs.createWriteStream('./downloads/hello.zip'));
 
 
 

@@ -1,4 +1,5 @@
 
-assets/classes/
-assets/downloads/
+assets
 node_modules
+downloads
+electrondesktopapp-win32-x64
