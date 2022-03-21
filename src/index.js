@@ -1,9 +1,15 @@
-const { app, BrowserWindow } = require("electron");
+const electron = require('electron'),
+app = electron.app,
+BrowserWindow = electron.BrowserWindow;
+
 const http = require('http'); // or 'https' for https:// URLs
 var fs = require("fs");
 var stream;
 const request = require('request');
 const progress = require('request-progress');
+
+
+
 
 
 const TIMEOUT = 5000; //5sec
@@ -28,21 +34,25 @@ let dirPath ="./downloads";
     
 //     .start();
 
-progress(request(url), {
+
+
+
+
+// progress(request(url), {
  
-})
-  .on('progress', function (state) {
+// })
+//   .on('progress', function (state) {
 
-    console.log('progress', state);
-})
-.on('error', function (err) {
-    console.log('Something went wrong');
-})
-  .on('close', function () {
-    console.log('File written!');
-  })
+//     console.log('progress', state);
+// })
+// .on('error', function (err) {
+//     console.log('Something went wrong');
+// })
+//   .on('close', function () {
+//     console.log('File written!');
+//   })
 
-  .pipe(fs.createWriteStream('./downloads/hello.zip'));
+//   .pipe(fs.createWriteStream('./downloads/papatest.jpg'));
 
 
 
@@ -54,10 +64,25 @@ function createWindow() {
         width:1920,
         height: 1080,
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            contextIsolation: false,
+
         }
     });
     // and load the index.html of the app.
     win.loadFile("./src/index.html");
 }
 app.on("ready", createWindow);
+
+
+
+const ipc = require('electron').ipcMain;
+ipc.on('synMessage', (event, args) => {
+ console.log(args);
+ event.returnValue = 'Main said I received your Sync message';
+})
+
+ipc.on('aSynMessage', (event, args) => {
+ console.log(args);
+ event.sender.send('asynReply','Main said: Async message received')
+})
