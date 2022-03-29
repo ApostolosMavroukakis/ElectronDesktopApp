@@ -1,88 +1,117 @@
-const electron = require('electron'),
-app = electron.app,
-BrowserWindow = electron.BrowserWindow;
 
+const electron = require('electron'),
+  app = electron.app,
+  BrowserWindow = electron.BrowserWindow;
+const Store = require('electron-store');
 const http = require('http'); // or 'https' for https:// URLs
 var fs = require("fs");
-var stream;
 const request = require('request');
-const progress = require('request-progress');
+var yauzl = require("yauzl");
+const ipc = require('electron').ipcMain;
+const unzipper = require('unzipper');
+const mkdirp = require('mkdirp'); 
+const store = new Store();
+// let url = "https://test.rdc-web.gr/hellloooo.zip";
+
+let dir = "./downloads"
+let dirPath = "./downloads/test.zip"; 
+let url ="http://demo.rdc-web.gr/media/test/class.zip"
+let percentage = 0
+
+
+
+let testData = [{id:0,className:"name",pathToClass:"./downloads"},{id:2,className:"name",pathToClass:"./downloads"},]
+
+store.set('test', testData);
+console.log(store.get('test'));
+
+ipc.on('unZip', (event, args) => {
+  fs.createReadStream('./assets/classes/zippedClass.zip')
+  .pipe(unzipper.Extract({ path: './downloads' }));
+});
 
 
 
 
 
-const TIMEOUT = 5000; //5sec
-const { DownloaderHelper } = require('node-downloader-helper');
-let url = "https://test.rdc-web.gr/hellloooo.zip";
-let dirPath ="./downloads";
-// const dl = new DownloaderHelper(url, dirPath);
-// dl.on('start', () => startTime = new Date())
-//    .on('error', (error) => { 
-//               const endTime = new Date();
-//               // probably you can check the error.status value
-//               if (endTime  - startTime >= TIMEOUT){
-//                dl.resume(); 
-//                console.log('Download Retry');
-//               }
-//     })
-//     .on('end', () => console.log('Download Completed'))
-//     .on('progress',state  => 
-//         console.log(state)
-//         )
+const getInstallerFile = (installerfileURL,installerfilename) => {
 
-    
-//     .start();
+  // Variable to save downloading progress
+  var received_bytes = 0;
+  var total_bytes = 0;
 
+  var outStream = fs.createWriteStream(installerfilename);
+  
+  request
+      .get(installerfileURL)
+          .on('error', function(err) {
+              console.log(err);
+          })
+          .on('response', function(data) {
+              total_bytes = parseInt(data.headers['content-length']);
+              console.log("download has started")
 
+          })
+          .on('data', function(chunk) {
+              received_bytes += chunk.length;
+              showDownloadingProgress(received_bytes, total_bytes);
+          })
+          .pipe(outStream);
+};
 
+function showDownloadingProgress(received, total) {
+  percentage = ((received * 100) / total).toFixed(2);
+  console.log(percentage + "% | " + received + " bytes downloaded out of " + total + " bytes.");
 
-
-// progress(request(url), {
- 
-// })
-//   .on('progress', function (state) {
-
-//     console.log('progress', state);
-// })
-// .on('error', function (err) {
-//     console.log('Something went wrong');
-// })
-//   .on('close', function () {
-//     console.log('File written!');
-//   })
-
-//   .pipe(fs.createWriteStream('./downloads/papatest.jpg'));
-
-
-
+}
 
 
 function createWindow() {
-    // Create the browser window.
-    let win = new BrowserWindow({
-        width:1920,
-        height: 1080,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
+  // Create the browser window.
+  let win = new BrowserWindow({
+    width: 1920,
+    height: 1080,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
 
-        }
-    });
-    // and load the index.html of the app.
-    win.loadFile("./src/index.html");
+    }
+  });
+  // and load the index.html of the app.
+  win.loadFile("./src/index.html");
 }
 app.on("ready", createWindow);
 
-
-
-const ipc = require('electron').ipcMain;
 ipc.on('synMessage', (event, args) => {
- console.log(args);
- event.returnValue = 'Main said I received your Sync message';
+  console.log(args);
+  event.returnValue = ' Sync message Reply Download is at' + percentage+"%";
 })
 
 ipc.on('aSynMessage', (event, args) => {
- console.log(args);
- event.sender.send('asynReply','Main said: Async message received')
+  console.log(args);
+  event.sender.send('asynReply', 'Main said: Async message received')
 })
+
+
+ipc.on('downloadZip', (event, args) => {
+
+  // downloadZip();
+  getInstallerFile(url,dirPath);
+  event.sender.send('downloadReply', 'Main said: Async DownloadStarted')
+})
+
+ipc.on('downloadClass', (event, args) => {
+  if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+    console.log("dir created")
+}
+
+  let tempData = store.get('classesData')
+  if (!tempData) tempData = []
+  tempData.push({id: tempData.length + 1, title:"A title"})
+  store.set('classesData',tempData)
+  // getInstallerFile(url,dirPath);
+  console.log(store.get('classesData'))
+  event.sender.send('downloadReply', 'Download has Started')
+})
+

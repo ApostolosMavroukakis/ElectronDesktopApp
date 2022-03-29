@@ -1,21 +1,34 @@
 // document.getElementById('center').style.backgroundColor= "red"
 const ipc = require('electron').ipcRenderer,
-syncBtn  = document.querySelector('#syncBtn'),
-asyncBtn = document.querySelector('#asyncBtn');
+    syncBtn = document.querySelector('#syncBtn'),
+    downloadClass = document.querySelector('#downloadClass'),
+    asyncBtn2 = document.querySelector('#asyncBtn2');
 
 let replyDiv = document.querySelector('#reply');
-syncBtn.addEventListener('click', () => {
- let
- reply = ipc.sendSync('synMessage','A sync message to main');
- replyDiv.innerHTML = reply;
+
+let loop = false; 
+
+
+
+downloadClass.addEventListener('click', () => {
+    ipc.send('downloadClass', 'Download The class')
 });
 
-asyncBtn.addEventListener('click', () => {
- ipc.send('aSynMessage','A async message to main')
+asyncBtn2.addEventListener('click', () => {
+    ipc.send('downloadZip', 'Download pig')
 });
 
-ipc.on('asynReply', (event, args) => {
- replyDiv.innerHTML = args;
+ipc.on('downloadReply', (event, args) => {
+    console.log(args)
+    loop = true;
+    runLoop();
+    replyDiv.innerHTML = args;
+
 });
+
+asyncBtn3.addEventListener('click', () => {
+    ipc.send('unZip', 'Unzip pig')
+});
+
 
 

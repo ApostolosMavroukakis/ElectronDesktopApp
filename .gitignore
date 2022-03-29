@@ -3,3 +3,4 @@ assets
 node_modules
 downloads/
 electrondesktopapp-win32-x64
+dist
