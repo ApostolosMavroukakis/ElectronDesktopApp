@@ -1,5 +1,6 @@
 
-assets
+assets/classes
+assets/downloads
 node_modules
 downloads/
 electrondesktopapp-win32-x64
